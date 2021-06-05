@@ -2,14 +2,14 @@ import Debug from "debug";
 import { Page } from "puppeteer-core";
 import { checkForAppointments } from "./appointments";
 import { sendTelegramMessage } from "./telegram";
-import { coloredError } from "./index";
+import { coloredError } from "./colors";
 const debug = Debug("impftermin:zentrum");
 
 export async function checkForUrlWithCode(
   page: Page,
   impfZentrumUrl: string,
   impfCode: string | undefined
-) {
+): Promise<boolean> {
   debug("Performing a check for location with url %s", impfZentrumUrl);
   try {
     const hasAppointments = await checkForAppointments(

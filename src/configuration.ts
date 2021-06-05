@@ -13,14 +13,16 @@ import {
 } from "superstruct";
 import isUrl from "is-url";
 const debug = Debug("impftermin:config");
-import { coloredError } from "./index";
+import { coloredError } from "./colors";
+
+export interface QueueEntry {
+  url: string;
+  code?: string;
+}
 
 export interface Config {
   intervalInMinutes: 15;
-  queue: {
-    url: string;
-    code?: string;
-  }[];
+  queue: Array<QueueEntry>;
 }
 
 const urlValidator = (url: any) => {

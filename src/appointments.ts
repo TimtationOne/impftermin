@@ -149,16 +149,30 @@ export async function proceedWithoutACode(page: Page) {
   }
 
   if (!appointmentWarning) {
-    // code available
-    debug("Appointments available!!");
-    return true;
+    // ensure again
+    debug("Waiting another 10s for appointments alert to show");
+    await page.waitForTimeout(10000);
+    const appointmentWarningSecondTry = await page.$("div.alert.alert-danger");
+    if (appointmentWarningSecondTry) {
+      // code available
+      debug("Code available!!");
+      return true;
+    }
   }
-  debug("No appointments");
+  debug("No code available");
   return false;
 }
 
 async function areWeOffline(page: Page) {
   return !(await page.$("div.footer-copyright"));
+}
+
+async function checkAppointmentStatus(page: Page, impfCode?: string) {
+  if (impfCode) {
+    return await proceedWithACode(page, impfCode);
+  } else {
+    return await proceedWithoutACode(page);
+  }
 }
 
 export async function checkForAppointments(
@@ -175,9 +189,15 @@ export async function checkForAppointments(
   // cookies - only accept necessary
   await acceptNecessaryCookies(page);
 
-  if (impfCode) {
-    return await proceedWithACode(page, impfCode);
-  } else {
-    return await proceedWithoutACode(page);
+  let appointmentFound = await checkAppointmentStatus(page, impfCode);
+
+  for (let index = 0; index < 14; index++) {
+    if(appointmentFound) {
+      return true;
+    }
+    debug("No appointment found retry in 30 seconds");
+    setTimeout(() => {}, 30000);
+    appointmentFound = await checkAppointmentStatus(page, impfCode);
   }
+  return appointmentFound;
 }
